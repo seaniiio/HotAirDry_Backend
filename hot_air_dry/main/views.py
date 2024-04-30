@@ -33,3 +33,23 @@ def create_lot(request, lot_id):
             )
             lot.save()
         return HttpResponse('Lot created successfully.', status=200)
+    
+# 측정 데이터 생성 api
+def create_measurement(request):
+    if request.method == 'POST':
+        data = json.load(request)
+
+        lot = Lot.objects.get(lot_id = data['lot_id'])
+
+        measurement = Measurement(
+            lot_id = lot,
+            result_type = data['result_type'],
+            abnormal_cause = data['abnormal_cause'],
+            process = data['process'],
+            # time = data['time'],
+            temp = data['temp'],
+            current = data['current']
+        )
+        measurement.save()
+
+        return HttpResponse('Measurement created successfully.', status=200)
