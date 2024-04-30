@@ -5,8 +5,8 @@ from django.db import models
 class Lot(models.Model):
     lot_id = models.PositiveSmallIntegerField(unique = True)
     normal_prob = models.PositiveSmallIntegerField(default=50)
-    abnormal_prob = models.PositiveSmallIntegerField(default=50)
-    temp_normal_value = models.PositiveSmallIntegerField(default=50)
+    abnormal_type = models.PositiveSmallIntegerField(default=50)
+    temp_normal_prob = models.PositiveSmallIntegerField(default=50)
     current_normal_prob = models.PositiveSmallIntegerField(default=50)
 
 class Measurement(models.Model):
@@ -14,6 +14,6 @@ class Measurement(models.Model):
     result_type = models.PositiveSmallIntegerField(default=0)
     abnormal_cause = models.PositiveSmallIntegerField(default=0)
     process = models.PositiveSmallIntegerField()
-    time = models.DateTimeField()
+    # time = models.DateTimeField()
     temp = models.IntegerField()
     current = models.IntegerField()
