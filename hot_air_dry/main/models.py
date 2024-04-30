@@ -14,6 +14,6 @@ class Measurement(models.Model):
     result_type = models.PositiveSmallIntegerField(default=0)
     abnormal_cause = models.PositiveSmallIntegerField(default=0)
     process = models.PositiveSmallIntegerField()
-    time = models.DateTimeField()
+    # time = models.DateTimeField()
     temp = models.IntegerField()
     current = models.IntegerField()
