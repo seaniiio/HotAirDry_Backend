@@ -66,4 +66,48 @@ def create_lot(request):
         
             return HttpResponse('Lot created successfully.', status=200)
         
-    return JsonResponse({'message':'DELETE 요청만 허용됩니다.'})
+    return JsonResponse({'message':'POST 요청만 허용됩니다.'})
+
+# 모든 lot 정상 확률 조회 (정상 확률 = 정상 데이터 / 전체 데이터)
+def get_normal_prob(request):
+    if request.method == 'GET':
+        
+        normal_prob_list = []
+        for id in range(12):
+            if Lot.objects.filter(lot_id = id).exists():
+                lot = Lot.objects.get(lot_id = id)
+                normal_prob = int(lot.normal_amount / lot.total_amount) * 100
+                normal_prob_list.append(normal_prob)
+            else: # 해당 로트에 대한 데이터가 아직 없는 경우
+                normal_prob_list.append(100)
+            
+        return JsonResponse(normal_prob_list, safe=False, status=200)
+
+    return JsonResponse({'message':'GET 요청만 허용됩니다.'})
+
+# 특정 lot 온도, 전류 기여도 조회
+def get_contribution(request, lot_id):
+
+    cont = [] # temp, curr 순서
+    if request.method == 'GET':
+        if Lot.objects.filter(lot_id = lot_id).exists():
+            lot = Lot.objects.get(lot_id = lot_id)
+            cont = [lot.temperature_contribution, lot.current_contribution]
+        else: # 해당 로트에 대한 데이터가 아직 없는 경우
+            cont = [0.0, 0.0]
+
+        return JsonResponse(cont, safe=False, status=200)
+    return JsonResponse({'message':'GET 요청만 허용됩니다.'})
+
+# 특정 lot 솔루션 조회
+def get_solution(request, lot_id):
+
+    if request.method == 'GET':
+        if Lot.objects.filter(lot_id = lot_id).exists():
+            lot = Lot.objects.get(lot_id = lot_id)
+            solution = lot.solution
+        else: # 해당 로트에 대한 데이터가 아직 없는 경우
+            solution = ""
+
+        return JsonResponse(solution, safe=False, status=200)
+    return JsonResponse({'message':'GET 요청만 허용됩니다.'})
