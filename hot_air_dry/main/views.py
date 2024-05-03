@@ -68,15 +68,18 @@ def create_lot(request):
         
     return JsonResponse({'message':'POST 요청만 허용됩니다.'})
 
-# 모든 lot 정상 확률 조회 (정상 확률 = 정상 데이터 / 전체 데이터)
+# 모든 lot 정상 확률 조회 (정상 확률 = (정상 데이터 / 전체 데이터) * 100)
 def get_normal_prob(request):
     if request.method == 'GET':
         
         normal_prob_list = []
-        for id in range(12):
+        for id in range(1, 12):
             if Lot.objects.filter(lot_id = id).exists():
                 lot = Lot.objects.get(lot_id = id)
-                normal_prob = int(lot.normal_amount / lot.total_amount) * 100
+                if lot.total_amount == 0:
+                    normal_prob = 100
+                else:
+                    normal_prob = int((lot.normal_amount / lot.total_amount) * 100)
                 normal_prob_list.append(normal_prob)
             else: # 해당 로트에 대한 데이터가 아직 없는 경우
                 normal_prob_list.append(100)
@@ -111,3 +114,24 @@ def get_solution(request, lot_id):
 
         return JsonResponse(solution, safe=False, status=200)
     return JsonResponse({'message':'GET 요청만 허용됩니다.'})
+
+
+# 모든 lot 데이터 초기화
+def init_lots(request):
+
+    if request.method == 'POST':
+        for lot_id in range(1, 12):
+            if Lot.objects.filter(lot_id = lot_id).exists():
+                lot = Lot.objects.get(lot_id=lot_id)
+
+                lot.normal_amount = 0
+                lot.total_amount = 0
+                lot.temperature_contribution = 0.0
+                lot.current_contribution = 0.0
+                lot.temperature_tendency = 0
+                lot.current_tendency = 0
+                lot.solution = solution(lot.temperature_contribution, lot.current_contribution, lot.temperature_tendency, lot.current_tendency)
+                lot.save()  # 변경 사항을 데이터베이스에 저장
+        
+        return HttpResponse('Lots initialize successfully.', status=200)
+    return JsonResponse({'message':'POST 요청만 허용됩니다.'})

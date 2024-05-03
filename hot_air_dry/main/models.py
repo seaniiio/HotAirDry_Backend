@@ -11,3 +11,6 @@ class Lot(models.Model):
     temperature_tendency = models.PositiveSmallIntegerField(default=50, null=False)
     current_tendency = models.PositiveSmallIntegerField(default=50, null=False)
     solution = models.CharField(max_length = 40)
+
+    def __str__(self):
+        return str(self.lot_id)
