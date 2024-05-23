@@ -1,11 +1,53 @@
 import json
 from django.http import JsonResponse, HttpResponse
-
+from apscheduler.schedulers.background import BackgroundScheduler
+import time
+import requests
+from requests.exceptions import RequestException
+import json
+import pandas as pd
 from .models import *
 
 
-def main(request):
-    return HttpResponse("main server ok!")
+# 랜덤한 데이터 선택
+def random_data():
+    print("random_data 실행")
+    df = pd.read_csv('./main/data/tNc_ng_train.csv')
+    random_row = df.sample(n=1)
+    # 선택한 행에서 특정 열만 선택하기
+    selected_columns = ['lot_id', 'Temp', 'Current']  # 열 이름을 변경합니다.
+    random_row_selected = random_row[selected_columns]
+
+    # 열 이름을 변경합니다.
+    random_row_selected.columns = ['lot_id', 'temperature', 'current']
+
+    # 선택한 열을 JSON 형식으로 변환하여 객체 하나로 만듭니다.
+    random_row_json = random_row_selected.to_dict(orient='records')[0]
+
+    try:
+        response = requests.post('http://localhost:8001/predict', json=random_row_json)
+
+        if response.status_code == 200:
+            print('Data successfully posted')
+            response_data = response.json()
+            print(response_data)
+            return response
+        else:
+            print('Failed to post data:', response.status_code)
+    except RequestException as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+def get_data(request):
+    if request.method == 'GET':
+        scheduler = BackgroundScheduler()
+        scheduler.add_job(random_data, 'interval', seconds=1)  # 1초마다 generate_data 함수 실행
+        scheduler.start()
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            scheduler.shutdown()
+    return JsonResponse({'message':'GET 요청만 허용됩니다.'})
 
 # 상태 보고 솔루션 return하는 메서드
 def solution(temperature_contribution, current_contribution, temperature_tendency, current_tendency): # 기여도, 경향성을 바탕으로 판단
