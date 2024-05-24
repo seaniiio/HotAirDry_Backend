@@ -6,31 +6,52 @@ import requests
 from requests.exceptions import RequestException
 import json
 import pandas as pd
+import random
 from .models import *
 
 
 # 랜덤한 데이터 선택
 def random_data():
     print("random_data 실행")
-    df = pd.read_csv('./main/data/tNc_ng_train.csv')
-    random_row = df.sample(n=1)
-    # 선택한 행에서 특정 열만 선택하기
-    selected_columns = ['lot_id', 'Temp', 'Current']  # 열 이름을 변경합니다.
-    random_row_selected = random_row[selected_columns]
+    # df = pd.read_csv('./main/data/tNc_ng_train.csv')
+    # random_row = df.sample(n=1)
+    # # 선택한 행에서 특정 열만 선택하기
+    # selected_columns = ['lot_id', 'Temp', 'Current']  # 열 이름을 변경합니다.
+    # random_row_selected = random_row[selected_columns]
 
-    # 열 이름을 변경합니다.
-    random_row_selected.columns = ['lot_id', 'temperature', 'current']
+    # # 열 이름을 변경합니다.
+    # random_row_selected.columns = ['lot_id', 'temperature', 'current']
 
-    # 선택한 열을 JSON 형식으로 변환하여 객체 하나로 만듭니다.
-    random_row_json = random_row_selected.to_dict(orient='records')[0]
+    # # 선택한 열을 JSON 형식으로 변환하여 객체 하나로 만듭니다.
+    # random_row_json = random_row_selected.to_dict(orient='records')[0]
+
+    lot_id = f"Lot{random.randint(0, 11)}"
+    temp = round(random.uniform(65.0, 75.0), 2)
+    current = round(random.uniform(1.4, 1.8), 2)
+    
+    # JSON 객체 생성
+    data = {
+        "lot_id": lot_id,
+        "temperature": temp,
+        "current": current
+    }
 
     try:
-        response = requests.post('http://localhost:8001/predict', json=random_row_json)
+        print("input data:", data)
+        response = requests.post('http://localhost:8001/predict', json=data)
 
         if response.status_code == 200:
             print('Data successfully posted')
             response_data = response.json()
             print(response_data)
+
+            try: # create lot
+                response_data['lot_id'] = int(response_data['lot_id'][3])
+                response = requests.post('http://localhost:8000/main/lot/', json=response_data)
+
+            except RequestException as e:
+                return JsonResponse({'error': str(e)}, status=500)
+            
             return response
         else:
             print('Failed to post data:', response.status_code)
@@ -60,16 +81,6 @@ def solution(temperature_contribution, current_contribution, temperature_tendenc
             return "전류를 낮춰주세요."
         return "전류를 높여주세요." # 전류가 기준보다 낮은 경우
 
-
-# JSON 입력 형식
-# {
-# 	"lot_id" : 2,
-# 	"normal_type" : 0,
-# 	"temperature_contribution" : 0.6,
-# 	"current_contribution" : 0.4,
-# 	"temperature_tendency" : 1,
-# 	"current_tendency" : 0
-# }
 # 로트 데이터 생성 api
 def create_lot(request):
     if request.method == 'POST':
