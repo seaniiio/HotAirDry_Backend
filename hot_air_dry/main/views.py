@@ -25,9 +25,9 @@ def random_data():
     # # 선택한 열을 JSON 형식으로 변환하여 객체 하나로 만듭니다.
     # random_row_json = random_row_selected.to_dict(orient='records')[0]
 
-    lot_id = f"Lot{random.randint(0, 11)}"
+    lot_id = f"Lot{random.randint(0, 12)}"
     temp = round(random.uniform(65.0, 75.0), 2)
-    current = round(random.uniform(1.4, 1.8), 2)
+    current = round(random.uniform(1.2, 1.75), 2)
     
     # JSON 객체 생성
     data = {
