@@ -12,7 +12,7 @@ from .models import *
 
 # 랜덤한 데이터 선택
 def random_data():
-    print("random_data 실행")
+    # print("random_data 실행")
     # df = pd.read_csv('./main/data/tNc_ng_train.csv')
     # random_row = df.sample(n=1)
     # # 선택한 행에서 특정 열만 선택하기
@@ -48,6 +48,7 @@ def random_data():
             try: # create lot
                 response_data['lot_id'] = int(response_data['lot_id'][3])
                 response = requests.post('http://localhost:8000/main/lot/', json=response_data)
+                print("Transformer output data:", response)
 
             except RequestException as e:
                 return JsonResponse({'error': str(e)}, status=500)
