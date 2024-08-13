@@ -31,7 +31,7 @@ def get_secret(setting,secrets_dict = secrets):
 
 SECRET_KEY = get_secret('SECRET_KEY') 
 
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = ['localhost', 'hot-air-dry.kro.kr']
 
 LOGGING = {
     'version': 1,
@@ -61,7 +61,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "main",
-    "corsheaders"
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -99,7 +99,8 @@ CORS_ALLOW_HEADERS = [  # 허용할 헤더
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000"
+    "http://localhost:3000",
+    'http://hot-air-dry.kro.kr'
 ]
 
 ROOT_URLCONF = "hot_air_dry.urls"
