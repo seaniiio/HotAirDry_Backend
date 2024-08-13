@@ -4,10 +4,25 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import time
 import requests
 from requests.exceptions import RequestException
-import json
 import pandas as pd
 import random
 from .models import *
+from pathlib import Path
+from django.core.exceptions import ImproperlyConfigured
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+secret_file = BASE_DIR / 'secrets.json'
+
+with open(secret_file) as file:
+    secrets = json.loads(file.read())
+
+def get_secret(setting,secrets_dict = secrets):
+    try:
+        return secrets_dict[setting]
+    except KeyError:
+        error_msg = f'Set the {setting} environment variable'
+        raise ImproperlyConfigured(error_msg)
 
 
 # 랜덤한 데이터 선택
@@ -38,7 +53,7 @@ def random_data():
 
     try:
         print("input data:", data)
-        response = requests.post('http://localhost:8001/predict', json=data)
+        response = requests.post(get_secret("DL_URL") + 'predict', json=data)
 
         if response.status_code == 200:
             print('Data successfully posted')
@@ -47,7 +62,7 @@ def random_data():
 
             try: # create lot
                 response_data['lot_id'] = int(response_data['lot_id'][3])
-                response = requests.post('http://localhost:8000/main/lot/', json=response_data)
+                response = requests.post(get_secret("BACKEND_URL") + 'main/lot/', json=response_data)
                 print("Transformer output data:", response)
 
             except RequestException as e:
