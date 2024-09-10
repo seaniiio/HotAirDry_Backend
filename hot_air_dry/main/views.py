@@ -9,6 +9,7 @@ import random
 from .models import *
 from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
+from apscheduler.triggers.date import DateTrigger
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -61,7 +62,10 @@ def random_data():
             print(response_data)
 
             try: # create lot
-                response_data['lot_id'] = int(response_data['lot_id'][3])
+                if len(response_data["lot_id"]) == 4:
+                    response_data['lot_id'] = int(response_data['lot_id'][3])
+                elif len(response_data["lot_id"]) == 5:
+                    response_data['lot_id'] =response_data['lot_id'][3] + response_data['lot_id'][4]
                 response = requests.post(get_secret("BACKEND_URL") + 'main/lot/', json=response_data)
                 print("Transformer output data:", response)
 
@@ -76,14 +80,16 @@ def random_data():
 
 def get_data(request):
     if request.method == 'GET':
-        scheduler = BackgroundScheduler()
-        scheduler.add_job(random_data, 'interval', seconds=1)  # 1초마다 generate_data 함수 실행
-        scheduler.start()
         try:
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            scheduler.shutdown()
+            scheduler = BackgroundScheduler()
+            scheduler.add_job(random_data, 'interval', seconds=1)  # 1초마다 generate_data 함수 실행
+            scheduler.start()
+        except Exception as e:
+            # 로그에 에러 메시지 기록
+            error_message = f"An error occurred: {str(e)}"
+            print(error_message)
+            return JsonResponse({'message': error_message}, status=500)
+        return JsonResponse({'message': 'Scheduler started.'})
     return JsonResponse({'message':'GET 요청만 허용됩니다.'})
 
 # 상태 보고 솔루션 return하는 메서드
@@ -204,3 +210,6 @@ def init_lots(request):
         
         return HttpResponse('Lots initialize successfully.', status=200)
     return JsonResponse({'message':'POST 요청만 허용됩니다.'})
+
+def dummy():
+    print(1)
